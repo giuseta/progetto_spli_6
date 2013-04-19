@@ -1,6 +1,5 @@
 import bitstring #modulo da scaricare per lavorare con i bit
 from bitstring import *
-import feistel
 
 #apro il file eye.jpg in bit e li metto in bit_img
 bit_img = BitStream(filename='/home/paolo/Pictures/eye.jpg')#bit_img = ConstBitStream(filename='/home/paolo/Pictures/eye.jpg')
