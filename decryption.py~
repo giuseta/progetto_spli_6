@@ -1,0 +1,9 @@
+# coding: utf-8 -*-
+import bitstring #modulo da scaricare per lavorare con i bit
+from bitstring import *
+import encryption
+from encryption import INTERCEPT,N
+
+#INTERCEPT=BitStream(INTERCEPT)
+print('\n\n'+INTERCEPT.bin)
+print('\n\n'+N.bin)

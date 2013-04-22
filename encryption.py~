@@ -1,5 +1,8 @@
+# coding: utf-8 -*-
 import bitstring #modulo da scaricare per lavorare con i bit
 from bitstring import *
+import feistel
+from feistel import *
 
 #apro il file eye.jpg in bit e li metto in bit_img
 bit_img = BitStream(filename='/home/paolo/Pictures/eye.jpg')#bit_img = ConstBitStream(filename='/home/paolo/Pictures/eye.jpg')
@@ -18,19 +21,34 @@ if resto!=0: #se non è multiplo
 
 quoziente=len_bit_img/512#quoziente è il numero di blocchi da 512 bit che dovrò processare
 
+logic=True
+while logic:
+        key=raw_input('Insert key (16 bit): ')
+        if ((len(key)==16)and(key.isdigit())and(key.find('2')==-1)and(key.find('3')==-1)and(key.find('4')==-1)and(key.find('5')==-1)and(key.find('6')==-1)and(key.find('7')==-1)and(key.find('8')==-1)and(key.find('9')==-1)):
+                logic=False
+        else:
+                print('Warning: Key must be composed by 16 chars only (0 and 1)!')
+
+key=BitStream(bin=key)
+N=BitStream(bin='01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101')
+
 for j in range(quoziente):
-	chunk=BitStream('0b'+bit_img.read('bin:512'))#prendo un blocco da 512bit (il cursore si sposta automaticamente ogni volta che leggo)
+	chunk=BitStream(bin=bit_img.read('bin:512'))#prendo un blocco da 512bit (il cursore si sposta automaticamente ogni volta che leggo)
 	if bit_img.pos==512:#prima lettura
 		chunk=chunk^N#blocco_1 XOR bit a bit con N (512 bit random da noi scelti)
-		#feist_chunk=feistel(chunk,key)#applico Feistel al blocco chunk con la chiave key
+		feist_chunk=BitStream(feistel(chunk, key))#applico Feistel al blocco chunk con la chiave key
 		cifrato=feist_chunk#inizializzo quello che sarà l'output [Eventualmente cambiare in cifrato=BitStream(feist_chunk)]
 		feist_chunk_prev=feist_chunk#memorizzo il blocco di dati "feistelizzato" per la successiva iterazione
 	else:#letture successive alla prima
 		chunk=chunk^feist_chunk_prev#XOR bit a bit tra il blocco precedente "feistelizzato" e il blocco corrente
-		#feist_chunk=feistel(chunk,key)#applico Feistel al blocco chunk con la chiave key
+		if(j==quoziente-1):#ultima iterazione	
+			INTERCEPT=chunk#Chunk di dati intercettato che verrà utilizzato per recuperare la key nell'attacco
+		feist_chunk=feistel(chunk, key)#applico Feistel al blocco chunk con la chiave key
 		cifrato.append(feist_chunk)#concateno i blocchi "feistelizzati" per la creazione del messaggio cifrato
 		feist_chunk_prev=feist_chunk#memorizzo il blocco di dati per la successiva iterazione
 
-c=open('/home/paolo/Pictures/encrypted', 'wb')
+print("\nEncryption Complete!\n")
+c=open('/home/paolo/Pictures/encrypted.jpg', 'wb')
 BitStream(cifrato).tofile(c)
-close(c)
+c.close()
+print("Encrypted file saved in /home/paolo/Pictures/encrypted.jpg")
